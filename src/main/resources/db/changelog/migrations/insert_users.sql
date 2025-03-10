@@ -1,5 +1,5 @@
 insert into users(login, password)
-values ('elena@yandex.ru', '12345');
+values ('admin@yandex.ru', 'admin');
 
 insert into users(login, password)
-values ('user@mail.ru', 'user');
+values ('user@yandex.ru', 'user');

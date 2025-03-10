@@ -3,58 +3,47 @@ package com.example.CloudStorage.controller;
 import com.example.CloudStorage.dto.FileEntityDto;
 import com.example.CloudStorage.service.UserService;
 import com.example.CloudStorage.service.FileService;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
+import java.io.IOException;
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("/file")
 @RequiredArgsConstructor
 @AllArgsConstructor
 public class FileController {
-    private FileService fileService;
-    private UserService userService;
+    private final FileService fileService;
+    private final UserService userService;
 
-    @PostMapping("/file")
-    public ResponseEntity<?> upload(@RequestHeader("auth-token") String authToken,
-                                    @RequestParam("filename") String filename, MultipartFile multipartFile) {
-        try {
-            userService.checkToken(authToken);
-            fileService.addFile(filename, filename.getBytes());
-            return ResponseEntity.ok(HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+    @PostMapping
+    public void uploadFile(@RequestHeader("auth-token") @NotBlank String authToken, @NotBlank String filename, @NotNull @RequestBody MultipartFile file) throws IOException {
+        userService.checkToken(authToken);
+        fileService.uploadFile(filename, file.getBytes ());
     }
 
-    @DeleteMapping("/file")
-    public ResponseEntity<Void> delete(@RequestHeader("auth-token") @NotBlank String authToken,
-                                       @NotBlank String filename) {
-        try {
-            userService.checkToken(authToken);
-            fileService.deleteFile(filename);
-            return new ResponseEntity<>(HttpStatus.OK);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+    @DeleteMapping
+    public void deleteFile(@RequestHeader("auth-token") @NotBlank String authToken, @NotBlank String filename) {
+        userService.checkToken(authToken);
+        fileService.deleteFile(filename);
     }
 
-    @GetMapping("/list")
-    public List<FileEntityDto> getFileList(@RequestHeader("auth-token") @NotBlank String authToken,
-                                           @Min(1) int limit) {
-        try {
-            userService.checkToken(authToken);
-        } catch (RuntimeException e) {
-            throw new RuntimeException(e);
-        }
-        return fileService.getFileList(limit);
+    @GetMapping(produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
+    public byte[] getFile(@RequestHeader("auth-token") @NotBlank String authToken, @NotBlank String filename) {
+        userService.checkToken(authToken);
+        return fileService.getFile(filename);
+    }
+
+    @PutMapping
+    public void editFile(@RequestHeader("auth-token") @NotBlank String authToken, @NotBlank String filename, @Valid @RequestBody FileEntityDto newFilename) {
+        userService.checkToken(authToken);
+        fileService.editFileName(filename, newFilename.getFilename());
     }
 
 }

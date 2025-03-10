@@ -13,6 +13,6 @@ import lombok.*;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class FileEntityDto {
-    String filename;
-    byte[] size;
+   public String filename;
+   public byte[] size;
 }
